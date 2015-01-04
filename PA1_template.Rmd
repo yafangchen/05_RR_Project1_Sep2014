@@ -1,6 +1,6 @@
 Reproducible Research - Project 1
 ========================================================
-Note: the generated PA1_template.html file can be viewed at: https://yafangchen.github.io/05_RR_Project1_Sep2014
+Note: the generated PA1_template.html file can be viewed at: https://yafangchen.github.io/05_RR_Project1_Sep2014/PA1_template.html
 
 ## Load and preprocess the data
 First, I will read the data into R
