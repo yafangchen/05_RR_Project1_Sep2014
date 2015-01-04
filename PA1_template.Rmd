@@ -1,46 +1,35 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-
-
-## Loading and preprocessing the data
+Reproducible Research - Project 1
+========================================================
+## Load and preprocess the data
 First, I will read the data into R
 
 ```{r}
-data <- read.csv("./activity.csv")
+if(!file.exists("activity.csv")){
+        unzip("activity.zip")
+}
+data <- read.csv("activity.csv")
 ```
-
 
 ## What is mean total number of steps taken per day?
 Here is a histogram of the total number of steps taken each day:
 
 ```{r}
+options(scipen=999)
 aggdata <- aggregate(steps~date,data,sum)
-hist(aggdata$steps,xlab="Total Steps",main="Total steps taken each day (with missing data)")
+library(ggplot2)
+t1 <- ggplot(aggdata,aes(x=steps))
+t1 + geom_histogram(binwidth=3000,colour="black",fill="white") + geom_vline(aes(xintercept=mean(aggdata$steps)),color="red",linetype="longdash",size=1) + geom_vline(aes(xintercept=median(aggdata$steps)), color="blue",linetype="dotted",size=1) + ggtitle("Total steps taken each day (with missing data)")
 ```
 
-The **mean** total number of steps taken per day is:
-
-```{r}
-mean(aggdata$steps)
-```
-
-The **median** total number of steps taken per day is:
-
-```{r}
-median(aggdata$steps)
-```
-
+The **mean** total number of steps taken per day is `r mean(aggdata$steps)`, while the **median** total number of steps taken per day is `r median(aggdata$steps)`.
 
 ## What is the average daily activity pattern?
 To investigate the average daily activity pattern, a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis) is generated:
 
 ```{r}
-aggdata2 <- aggregate(steps~interval,data,sum)
-with(aggdata2,plot(interval,steps,type="l",main="Average number of steps taken"))
+aggdata2 <- aggregate(steps~interval,data,mean)
+t2 <- ggplot(aggdata2,aes(x=interval,y=steps))
+t2 + geom_line(colour="blue") + ggtitle("Average number of steps taken")
 ```
 
 The 5-minute interval that contains the maximum number of steps is:
@@ -49,9 +38,7 @@ The 5-minute interval that contains the maximum number of steps is:
 aggdata2[(aggdata2$steps==max(aggdata2$steps)),]
 ```
 
-
-
-## Imputing missing values
+## Input missing values
 Note that there are a number of days/intervals that have missing values (coded as NA). The total number of missing values in the dataset is:
 
 ```{r}
@@ -71,23 +58,13 @@ Here is a histogram of the total number of steps taken each day:
 
 ```{r}
 aggmergedData <- aggregate(steps.x~date,mergedData,sum)
-hist(aggdata$steps,xlab="Total Steps",main="Total steps taken each day (no missing data)")
+t3 <- ggplot(aggmergedData,aes(x=steps.x))
+t1 + geom_histogram(binwidth=3000,colour="black",fill="white") + geom_vline(aes(xintercept=mean(aggmergedData$steps.x)),color="red",linetype="longdash",size=1) + geom_vline(aes(xintercept=median(aggmergedData$steps.x)), color="blue",linetype="dotted",size=1) + ggtitle("Total steps taken each day (no missing data)")
 ```
 
-The **mean** total number of steps taken per day is:
+The **mean** total number of steps taken per day is `r mean(aggmergedData$steps.x)`, while the **median** total number of steps taken per day is `r median(aggmergedData$steps.x)`.
 
-```{r}
-mean(aggmergedData$steps.x)
-```
-
-The **median** total number of steps taken per day is:
-
-```{r}
-median(aggmergedData$steps.x)
-```
-
-Note that these values differ from those calcuated with the original dataset that has missing values. With the missing values filled in, the **mean** total number of steps taken per day is the same as before, but the **median** total number of steps taken per day is different.
-
+Note that with the missing values filled in, the **mean** total number of steps taken per day is the same as before, but the **median** total number of steps taken per day is different.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 First, I create a new factor variable (**day**) in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend.
@@ -100,8 +77,9 @@ mergedData$day <- ifelse((weekdays(mergedData[,c("date")],abbreviate=TRUE) %in% 
 Then a panel plot is generated, which contains a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis):
 
 ```{r}
-aggmergedData_day <- aggregate(steps.x~interval+day,mergedData,sum)
-library(ggplot2)
-g <- ggplot(aggmergedData_day,aes(interval,steps.x))
+aggmergedData_day <- aggregate(steps.x~interval+day,mergedData,mean)
+g <- ggplot(aggmergedData_day,aes(interval,steps.x,colour=day))
 g + geom_line() + facet_grid(day~.) + labs(y="Number of steps")
 ```
+
+As shown in the plot, the activity patterns differ between weekdays and weekends. There is a spike in activity in the morning for weekdays, which is not present during the weekend. During the weekend, the subject seems to get up later.
